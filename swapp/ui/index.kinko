@@ -1,0 +1,10 @@
+def view
+  "<!DOCTYPE html>"
+  html
+    body
+      ul
+        each feature features
+          li feature.id " - " feature.title " (" feature.director ")"
+            ul
+              each planet feature.planets
+                li planet.name
