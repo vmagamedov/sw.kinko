@@ -27,10 +27,10 @@ GRAPH = Graph([
             'terrain',
         ]),
         [
-            # db_link(session, 'features', 'id',
-            #         FeaturePlanet.__table__.c.planet_id,
-            #         FeaturePlanet.__table__.c.feature_id,
-            #         to_list=True, edge='feature'),
+            db_link(session, 'features', 'id',
+                    FeaturePlanet.__table__.c.planet_id,
+                    FeaturePlanet.__table__.c.feature_id,
+                    to_list=True, edge='feature'),
         ],
     )),
     Edge(Feature.__table__.name, chain(

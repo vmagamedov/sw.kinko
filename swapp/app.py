@@ -28,16 +28,16 @@ engine = Engine(ThreadsExecutor(thread_pool))
 ui_path = os.path.join(os.path.dirname(__file__), 'ui')
 lookup = Lookup(load_types(dump_types(GRAPH)), FileSystemLoader(ui_path))
 
-
 app = Flask(__name__)
 
 
 @app.route('/')
 def index():
     fn = lookup.get('index/view')
-    print(fn.query())
+    print('QUERY:', fn.query())
     hiku_query = read(repr(fn.query()))
     result = engine.execute(GRAPH, hiku_query)
+    print('RESULT:', result)
     return fn.render(result)
 
 
