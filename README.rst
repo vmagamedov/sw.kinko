@@ -23,6 +23,8 @@ To view rendered
 template, you can open http://localhost:5000/ url. In the console you will see generated Hiku query
 and result of it's execution.
 
-To view Graph API Console, you can open http://localhost:5000/graph url. Try this query::
+To view Graph API Console, you can open http://localhost:5000/graph url. Try this query:
+
+.. code-block:: clojure
 
   [{:features [:title :director {:planets [:name]}]}]
