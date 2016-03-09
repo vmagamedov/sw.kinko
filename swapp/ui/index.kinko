@@ -1,10 +1,23 @@
-def view
+def layout
   "<!DOCTYPE html>"
   html
     body
+      #content
+
+def view
+  ./layout
+    :content
+      h3 "Planet by Feature"
       ul
         each feature features
-          li feature.id " - " feature.title " (" feature.director ")"
+          li "Ep. " feature.episode_num " - " feature.title " (dir. " feature.director ")"
             ul
               each planet feature.planets
                 li planet.name
+      h3 "Feature by Planet"
+      ul
+        each planet planets
+          li planet.name
+            ul
+              each feature planet.features
+                li feature.title
