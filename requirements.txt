@@ -1,0 +1,4 @@
+https://github.com/vmagamedov/kinko/archive/master.zip
+https://github.com/vmagamedov/hiku/archive/master.zip
+sqlalchemy
+flask

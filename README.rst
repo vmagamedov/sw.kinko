@@ -8,7 +8,7 @@ Installation
 
 Setup environment::
 
-  $ git checkout https://github.com/vmagamedov/sw.kinko.git && cd sw.kinko
+  $ git clone https://github.com/vmagamedov/sw.kinko.git && cd sw.kinko
   $ pyvenv env
   $ source env/bin/activate
   $ pip install -r requirements.txt
