@@ -8,7 +8,6 @@ from werkzeug.wsgi import DispatcherMiddleware
 from hiku.engine import Engine
 from hiku.console.ui import ConsoleApplication
 from hiku.typedef.kinko import dumps as dump_types
-from hiku.readers.simple import read
 from hiku.executors.threads import ThreadsExecutor
 
 from kinko.lookup import Lookup
@@ -35,8 +34,7 @@ app = Flask(__name__)
 def index():
     fn = lookup.get('index/view')
     print('QUERY:', fn.query())
-    hiku_query = read(repr(fn.query()))
-    result = engine.execute(GRAPH, hiku_query)
+    result = engine.execute(GRAPH, fn.query())
     print('RESULT:', result)
     return fn.render(result)
 
