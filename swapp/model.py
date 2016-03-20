@@ -66,19 +66,19 @@ class Record(object):
                 if not name.startswith('__')}
 
 
-class Climate(Enum):
+class _Climate(Enum):
     arid = 1
     temperate = 2
     tropical = 3
 
 
-class Terrain(Enum):
+class _Terrain(Enum):
     desert = 1
     grasslands = 2
     mountains = 3
 
 
-class Gender(Enum):
+class _Gender(Enum):
     male = 1
     female = 2
 
@@ -102,8 +102,8 @@ class Planet(Record):
         metadata,
         Column('id', Integer, primary_key=True),
         Column('name', Unicode),
-        Column('climate', JSONEnumSet(Climate)),
-        Column('terrain', JSONEnumSet(Terrain)),
+        Column('climate', JSONEnumSet(_Climate)),
+        Column('terrain', JSONEnumSet(_Terrain)),
     )
 
 
@@ -113,7 +113,7 @@ class Character(Record):
         metadata,
         Column('id', Integer, primary_key=True),
         Column('name', Unicode),
-        Column('gender', IntEnum(Gender)),
+        Column('gender', IntEnum(_Gender)),
         Column('birth_year', Unicode),
         Column('home_planet_id', ForeignKey('planet.id')),
     )
@@ -166,22 +166,22 @@ class FeatureStarship(Record):
 class Tatooine(Planet):
     id = gen_id()
     name = "Tatooine"
-    climate = {Climate.arid}
-    terrain = {Terrain.desert}
+    climate = {_Climate.arid}
+    terrain = {_Terrain.desert}
 
 
 class Alderaan(Planet):
     id = gen_id()
     name = "Alderaan"
-    climate = {Climate.temperate}
-    terrain = {Terrain.grasslands, Terrain.mountains}
+    climate = {_Climate.temperate}
+    terrain = {_Terrain.grasslands, _Terrain.mountains}
 
 
 class YavinIV(Planet):
     id = gen_id()
     name = "Yavin IV"
-    climate = {Climate.temperate, Climate.tropical}
-    terrain = {Terrain.grasslands, Terrain.mountains}
+    climate = {_Climate.temperate, _Climate.tropical}
+    terrain = {_Terrain.grasslands, _Terrain.mountains}
 
 
 class Hoth(Planet):
@@ -225,7 +225,7 @@ class TheEmpireStrikesBack(Feature):
 class LukeSkywalker(Character):
     id = gen_id()
     name = "Luke Skywalker"
-    gender = Gender.male
+    gender = _Gender.male
     birth_year = '19BBY'
     home_planet_id = Tatooine.id
 
@@ -233,7 +233,7 @@ class LukeSkywalker(Character):
 class DarthVader(Character):
     id = gen_id()
     name = "Darth Vader"
-    gender = Gender.male
+    gender = _Gender.male
     birth_year = '41.9BBY'
     home_planet_id = Tatooine.id
 
@@ -241,7 +241,7 @@ class DarthVader(Character):
 class LeiaOrgana(Character):
     id = gen_id()
     name = "Leia Organa"
-    gender = Gender.female
+    gender = _Gender.female
     birth_year = '19BBY'
     home_planet_id = Alderaan.id
 
@@ -249,7 +249,7 @@ class LeiaOrgana(Character):
 class Yoda(Character):
     id = gen_id()
     name = "Yoda"
-    gender = Gender.male
+    gender = _Gender.male
     birth_year = '896BBY'
     # home_planet = 28
 
@@ -257,7 +257,7 @@ class Yoda(Character):
 class ObiWanKenobi(Character):
     id = gen_id()
     name = "Obi-Wan Kenobi"
-    gender = Gender.male
+    gender = _Gender.male
     birth_year = '57BBY'
     # home_planet = 20
 
@@ -265,7 +265,7 @@ class ObiWanKenobi(Character):
 class HanSolo(Character):
     id = gen_id()
     name = "Han Solo"
-    gender = Gender.male
+    gender = _Gender.male
     birth_year = '29BBY'
     # home_planet = 22
 
@@ -273,7 +273,7 @@ class HanSolo(Character):
 class Chewbacca(Character):
     id = gen_id()
     name = "Chewbacca"
-    gender = Gender.male
+    gender = _Gender.male
     birth_year = '200BBY'
     # home_planet = 14
 
