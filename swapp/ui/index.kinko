@@ -19,9 +19,9 @@ def view
         each planet planets
           li planet.name
             " ("
-            if planet.climate planet.climate "N/A"
+            if-some [x planet.climate] x "N/A"
             "; "
-            if planet.terrain planet.terrain "N/A"
+            if-some [x planet.terrain] x "N/A"
             ")"
             ul
               each feature planet.features

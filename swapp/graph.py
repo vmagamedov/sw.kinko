@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from hiku.expr import Expr, S, define
 from hiku.graph import Graph, Edge, Link
-from hiku.types import StringType, IntegerType
+from hiku.types import StringType, IntegerType, OptionType
 from hiku.sources.graph import subquery_fields
 from hiku.sources.sqlalchemy import db_fields, db_link
 
@@ -65,7 +65,9 @@ CLIMATE = enum_map(['ident', 'title'], {
 
 @define(None)
 def climate(value):
-    return ', '.join(sorted(CLIMATE[v].title for v in (value or [])))
+    if value is not None:
+        return ', '.join(sorted(CLIMATE[v].title for v in value))
+    return None
 
 
 TERRAIN = enum_map(['ident', 'title'], {
@@ -77,7 +79,9 @@ TERRAIN = enum_map(['ident', 'title'], {
 
 @define(None)
 def terrain(value):
-    return ', '.join(sorted(TERRAIN[v].title for v in (value or [])))
+    if value is not None:
+        return ', '.join(sorted(TERRAIN[v].title for v in value))
+    return None
 
 
 def query_planets():
@@ -110,8 +114,8 @@ GRAPH = Graph([
         subquery_fields(_GRAPH, Planet.__table__.name, [
             Expr('id', IntegerType, S.this.id),
             Expr('name', StringType, S.this.name),
-            Expr('climate', StringType, climate(S.this.climate)),
-            Expr('terrain', StringType, terrain(S.this.terrain)),
+            Expr('climate', OptionType(StringType), climate(S.this.climate)),
+            Expr('terrain', OptionType(StringType), terrain(S.this.terrain)),
         ]),
         [
             db_link(session, 'features', 'id',
