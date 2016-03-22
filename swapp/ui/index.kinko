@@ -18,11 +18,10 @@ def view
       ul
         each planet planets
           li planet.name
-            " ("
-            if-some [x planet.climate] x "N/A"
-            "; "
-            if-some [x planet.terrain] x "N/A"
-            ")"
+            if-some [x planet.climate]
+              "; climate: {x}"
+            if-some [x planet.terrain]
+              "; terrain: {x}"
             ul
               each feature planet.features
                 li feature.title
