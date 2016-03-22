@@ -10,7 +10,7 @@ def view
       h3 "Planet by Feature"
       ul
         each feature features
-          li "Ep. " feature.episode-num " - " feature.title " (dir. " feature.director ")"
+          li "Ep. {feature.episode-num} - {feature.title} (dir. {feature.director})"
             ul
               each planet feature.planets
                 li planet.name
