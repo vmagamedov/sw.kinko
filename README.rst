@@ -1,7 +1,7 @@
 Star Wars Playground
 ====================
 
-This is a sample application to try Kinko DSL and Hiku Graph API.
+This is a sample application to try `Kinko <https://github.com/vmagamedov/kinko>`_ DSL and `Hiku <https://github.com/vmagamedov/hiku>`_ Graph API.
 
 Installation
 ~~~~~~~~~~~~
