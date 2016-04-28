@@ -4,10 +4,10 @@ from collections import namedtuple
 from sqlalchemy import select
 
 from hiku.expr import Expr, S, define
-from hiku.graph import Graph, Edge, link
+from hiku.graph import Graph, Edge, Link
 from hiku.types import StringType, IntegerType, OptionType
+from hiku.sources import sqlalchemy as sa
 from hiku.sources.graph import subquery_fields
-from hiku.sources.sqlalchemy import fields as sa_fields, link as sa_link
 
 from .model import session, Planet, Feature, FeaturePlanet
 from .model import _Climate, _Terrain
@@ -17,45 +17,44 @@ def _(string):
     return string
 
 
-@sa_link.many('feature', session,
-              from_=FeaturePlanet.__table__.c.planet_id,
-              to=FeaturePlanet.__table__.c.feature_id)
-def planet_to_features(expr):
-    return expr
+planets_query = sa.FieldsQuery(session, Planet.__table__)
 
+features_query = sa.FieldsQuery(session, Feature.__table__)
 
-@sa_link.many('planet', session,
-              from_=FeaturePlanet.__table__.c.feature_id,
-              to=FeaturePlanet.__table__.c.planet_id)
-def feature_to_planets(expr):
-    return expr
+to_planets_query = sa.LinkQuery(
+    session,
+    from_column=FeaturePlanet.__table__.c.feature_id,
+    to='planet',
+    to_column=FeaturePlanet.__table__.c.planet_id,
+    to_list=True,
+)
 
+to_features_query = sa.LinkQuery(
+    session,
+    from_column=FeaturePlanet.__table__.c.planet_id,
+    to='feature',
+    to_column=FeaturePlanet.__table__.c.feature_id,
+    to_list=True,
+)
 
 _GRAPH = Graph([
-    Edge('planet', chain(
-        sa_fields(session, Planet.__table__, [
-            'id',
-            'name',
-            'climate',
-            'terrain',
-        ]),
-        [
-            planet_to_features('features', requires='id'),
-        ],
-    )),
-    Edge('feature', chain(
-        sa_fields(session, Feature.__table__, [
-            'id',
-            'title',
-            'director',
-            'producer',
-            'episode_num',
-            'release_date',
-        ]),
-        [
-            feature_to_planets('planets', requires='id'),
-        ],
-    )),
+    Edge('planet', [
+        sa.Field('id', planets_query),
+        sa.Field('name', planets_query),
+        sa.Field('climate', planets_query),
+        sa.Field('terrain', planets_query),
+        sa.Link('features', to_features_query, requires='id'),
+    ]),
+
+    Edge('feature', [
+        sa.Field('id', features_query),
+        sa.Field('title', features_query),
+        sa.Field('director', features_query),
+        sa.Field('producer', features_query),
+        sa.Field('episode_num', features_query),
+        sa.Field('release_date', features_query),
+        sa.Link('planets', to_planets_query, requires='id'),
+    ]),
 ])
 
 
@@ -92,14 +91,12 @@ def terrain(value):
     return None
 
 
-@link.many('planet', requires=False)
-def planets():
+def all_planets():
     rows = session.execute(select([Planet.__table__.c.id])).fetchall()
     return [r.id for r in rows]
 
 
-@link.many('feature', requires=False)
-def features():
+def all_features():
     rows = session.execute(select([Feature.__table__.c.id])).fetchall()
     return [r.id for r in rows]
 
@@ -114,7 +111,7 @@ GRAPH = Graph([
             Expr('episode-num', IntegerType, S.this.episode_num),
         ]),
         [
-            feature_to_planets('planets', requires='id'),
+            sa.Link('planets', to_planets_query, requires='id'),
         ],
     )),
     Edge('planet', chain(
@@ -125,9 +122,9 @@ GRAPH = Graph([
             Expr('terrain', OptionType(StringType), terrain(S.this.terrain)),
         ]),
         [
-            planet_to_features('features', requires='id'),
+            sa.Link('features', to_features_query, requires='id'),
         ],
     )),
-    planets('planets'),
-    features('features'),
+    Link('planets', all_planets, to='planet', requires=None, to_list=True),
+    Link('features', all_features, to='feature', requires=None, to_list=True),
 ])
