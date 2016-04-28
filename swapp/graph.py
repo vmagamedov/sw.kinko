@@ -3,11 +3,11 @@ from collections import namedtuple
 
 from sqlalchemy import select
 
-from hiku.expr import Expr, S, define
+from hiku.expr import S, define
 from hiku.graph import Graph, Edge, Link
 from hiku.types import StringType, IntegerType, OptionType
 from hiku.sources import sqlalchemy as sa
-from hiku.sources.graph import subquery_fields
+from hiku.sources.graph import SubQuery, Expr
 
 from .model import session, Planet, Feature, FeaturePlanet
 from .model import _Climate, _Terrain
@@ -101,30 +101,28 @@ def all_features():
     return [r.id for r in rows]
 
 
+sq_feature = SubQuery(_GRAPH, 'feature')
+sq_planet = SubQuery(_GRAPH, 'planet')
+
+
 GRAPH = Graph([
-    Edge('feature', chain(
-        subquery_fields(_GRAPH, 'feature', [
-            Expr('id', IntegerType, S.this.id),
-            Expr('title', StringType, S.this.title),
-            Expr('director', StringType, S.this.director),
-            Expr('producer', StringType, S.this.producer),
-            Expr('episode-num', IntegerType, S.this.episode_num),
-        ]),
-        [
-            sa.Link('planets', to_planets_query, requires='id'),
-        ],
-    )),
-    Edge('planet', chain(
-        subquery_fields(_GRAPH, 'planet', [
-            Expr('id', IntegerType, S.this.id),
-            Expr('name', StringType, S.this.name),
-            Expr('climate', OptionType(StringType), climate(S.this.climate)),
-            Expr('terrain', OptionType(StringType), terrain(S.this.terrain)),
-        ]),
-        [
-            sa.Link('features', to_features_query, requires='id'),
-        ],
-    )),
+    Edge('feature', [
+        Expr('id', sq_feature, IntegerType, S.this.id),
+        Expr('title', sq_feature, StringType, S.this.title),
+        Expr('director', sq_feature, StringType, S.this.director),
+        Expr('producer', sq_feature, StringType, S.this.producer),
+        Expr('episode-num', sq_feature, IntegerType, S.this.episode_num),
+        sa.Link('planets', to_planets_query, requires='id'),
+    ]),
+    Edge('planet', [
+        Expr('id', sq_planet, IntegerType, S.this.id),
+        Expr('name', sq_planet, StringType, S.this.name),
+        Expr('climate', sq_planet, OptionType(StringType),
+             climate(S.this.climate)),
+        Expr('terrain', sq_planet, OptionType(StringType),
+             terrain(S.this.terrain)),
+        sa.Link('features', to_features_query, requires='id'),
+    ]),
     Link('planets', all_planets, to='planet', requires=None, to_list=True),
     Link('features', all_features, to='feature', requires=None, to_list=True),
 ])
