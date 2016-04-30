@@ -23,16 +23,16 @@ features_query = sa.FieldsQuery(session, Feature.__table__)
 
 to_planets_query = sa.LinkQuery(
     session,
+    edge='planet',
     from_column=FeaturePlanet.__table__.c.feature_id,
-    to='planet',
     to_column=FeaturePlanet.__table__.c.planet_id,
     to_list=True,
 )
 
 to_features_query = sa.LinkQuery(
     session,
+    edge='feature',
     from_column=FeaturePlanet.__table__.c.planet_id,
-    to='feature',
     to_column=FeaturePlanet.__table__.c.feature_id,
     to_list=True,
 )
@@ -123,6 +123,6 @@ GRAPH = Graph([
              terrain(S.this.terrain)),
         sa.Link('features', to_features_query, requires='id'),
     ]),
-    Link('planets', all_planets, to='planet', requires=None, to_list=True),
-    Link('features', all_features, to='feature', requires=None, to_list=True),
+    Link('planets', all_planets, edge='planet', requires=None, to_list=True),
+    Link('features', all_features, edge='feature', requires=None, to_list=True),
 ])
