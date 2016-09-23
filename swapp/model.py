@@ -11,7 +11,6 @@ from sqlalchemy.schema import MetaData, Column, Table, ForeignKey
 
 
 metadata = MetaData()
-session = scoped_session(sessionmaker())
 
 _last_id = 0
 

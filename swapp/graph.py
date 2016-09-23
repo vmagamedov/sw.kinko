@@ -1,15 +1,15 @@
-from itertools import chain
 from collections import namedtuple
 
 from sqlalchemy import select
 
 from hiku.expr import S, define
-from hiku.graph import Graph, Edge, Link
-from hiku.types import StringType, IntegerType, OptionType
+from hiku.graph import Graph, Edge, Link, Root
+from hiku.types import String, Integer, Optional, Sequence, TypeRef, Unknown
+from hiku.engine import pass_context
 from hiku.sources import sqlalchemy as sa
 from hiku.sources.graph import SubGraph, Expr
 
-from .model import session, Planet, Feature, FeaturePlanet
+from .model import Planet, Feature, FeaturePlanet
 from .model import _Climate, _Terrain
 
 
@@ -17,24 +17,24 @@ def _(string):
     return string
 
 
-planets_query = sa.FieldsQuery(session, Planet.__table__)
+SA_ENGINE = 'sa-engine'
 
-features_query = sa.FieldsQuery(session, Feature.__table__)
+planets_query = sa.FieldsQuery(SA_ENGINE, Planet.__table__)
+
+features_query = sa.FieldsQuery(SA_ENGINE, Feature.__table__)
 
 to_planets_query = sa.LinkQuery(
-    session,
-    edge='planet',
+    Sequence[TypeRef['planet']],
+    SA_ENGINE,
     from_column=FeaturePlanet.__table__.c.feature_id,
     to_column=FeaturePlanet.__table__.c.planet_id,
-    to_list=True,
 )
 
 to_features_query = sa.LinkQuery(
-    session,
-    edge='feature',
+    Sequence[TypeRef['feature']],
+    SA_ENGINE,
     from_column=FeaturePlanet.__table__.c.planet_id,
     to_column=FeaturePlanet.__table__.c.feature_id,
-    to_list=True,
 )
 
 _GRAPH = Graph([
@@ -70,7 +70,7 @@ CLIMATE = enum_map(['ident', 'title'], {
 })
 
 
-@define(None)
+@define(Unknown)
 def climate(value):
     if value is not None:
         return ', '.join(sorted(CLIMATE[v].title for v in value))
@@ -84,20 +84,22 @@ TERRAIN = enum_map(['ident', 'title'], {
 })
 
 
-@define(None)
+@define(Unknown)
 def terrain(value):
     if value is not None:
         return ', '.join(sorted(TERRAIN[v].title for v in value))
     return None
 
 
-def all_planets():
-    rows = session.execute(select([Planet.__table__.c.id])).fetchall()
+@pass_context
+def all_planets(ctx):
+    rows = ctx[SA_ENGINE].execute(select([Planet.__table__.c.id])).fetchall()
     return [r.id for r in rows]
 
 
-def all_features():
-    rows = session.execute(select([Feature.__table__.c.id])).fetchall()
+@pass_context
+def all_features(ctx):
+    rows = ctx[SA_ENGINE].execute(select([Feature.__table__.c.id])).fetchall()
     return [r.id for r in rows]
 
 
@@ -107,22 +109,26 @@ sg_planet = SubGraph(_GRAPH, 'planet')
 
 GRAPH = Graph([
     Edge('feature', [
-        Expr('id', sg_feature, IntegerType, S.this.id),
-        Expr('title', sg_feature, StringType, S.this.title),
-        Expr('director', sg_feature, StringType, S.this.director),
-        Expr('producer', sg_feature, StringType, S.this.producer),
-        Expr('episode-num', sg_feature, IntegerType, S.this.episode_num),
+        Expr('id', sg_feature, Integer, S.this.id),
+        Expr('title', sg_feature, String, S.this.title),
+        Expr('director', sg_feature, String, S.this.director),
+        Expr('producer', sg_feature, String, S.this.producer),
+        Expr('episode-num', sg_feature, Integer, S.this.episode_num),
         sa.Link('planets', to_planets_query, requires='id'),
     ]),
     Edge('planet', [
-        Expr('id', sg_planet, IntegerType, S.this.id),
-        Expr('name', sg_planet, StringType, S.this.name),
-        Expr('climate', sg_planet, OptionType(StringType),
+        Expr('id', sg_planet, Integer, S.this.id),
+        Expr('name', sg_planet, String, S.this.name),
+        Expr('climate', sg_planet, Optional[String],
              climate(S.this.climate)),
-        Expr('terrain', sg_planet, OptionType(StringType),
+        Expr('terrain', sg_planet, Optional[String],
              terrain(S.this.terrain)),
         sa.Link('features', to_features_query, requires='id'),
     ]),
-    Link('planets', all_planets, edge='planet', requires=None, to_list=True),
-    Link('features', all_features, edge='feature', requires=None, to_list=True),
+    Root([
+        Link('planets', Sequence[TypeRef['planet']],
+             all_planets, requires=None),
+        Link('features', Sequence[TypeRef['feature']],
+             all_features, requires=None),
+    ]),
 ])
