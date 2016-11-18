@@ -18,12 +18,12 @@ from kinko.loaders import FileSystemLoader
 from kinko.typedef import load_types
 
 from .model import setup
-from .graph import GRAPH, SA_ENGINE
+from .graph import GRAPH, SA_ENGINE_KEY
 
 
 sa_engine = setup()
 
-hiku_engine_ctx = {SA_ENGINE: sa_engine}
+hiku_engine_ctx = {SA_ENGINE_KEY: sa_engine}
 
 thread_pool = ThreadPoolExecutor(2)
 engine = Engine(ThreadsExecutor(thread_pool))
